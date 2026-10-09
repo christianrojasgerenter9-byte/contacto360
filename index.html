@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Contacto360</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div class="auth-wrap" id="authScreen" hidden>
+  <div class="auth-card">
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0 1 16 0"/><rect x="2" y="12" width="4" height="7" rx="1.5"/><rect x="18" y="12" width="4" height="7" rx="1.5"/><path d="M20 19a4 4 0 0 1-4 3h-3"/></svg>
+      <span>Contacto360</span>
+    </div>
+    <div>
+      <h1 id="authTitle">Iniciar sesión</h1>
+      <p class="sub" style="margin: 4px 0 0;">CRM y marcador predictivo del call center.</p>
+    </div>
+    <form id="authForm" novalidate>
+      <label class="field" for="aEmail">Correo<input class="input" id="aEmail" type="email" autocomplete="email" required></label>
+      <label class="field" for="aPass">Contraseña<input class="input" id="aPass" type="password" autocomplete="current-password" minlength="6" required></label>
+      <div id="registerFields" hidden style="display: flex; flex-direction: column; gap: 14px;">
+        <label class="field" for="aName">Nombre completo<input class="input" id="aName" type="text" autocomplete="name"></label>
+        <label class="field" for="aRole">Rol
+          <select class="input" id="aRole"><option value="agente">Agente</option><option value="supervisor">Supervisor</option></select>
+        </label>
+      </div>
+      <div class="notice warn" id="authError" hidden></div>
+      <button class="btn primary" type="submit" id="authSubmit">Entrar</button>
+    </form>
+    <div class="auth-switch"><span id="authSwitchText">¿No tienes cuenta?</span> <button type="button" id="authSwitch">Crear cuenta</button></div>
+  </div>
+</div>
+
+<!-- ============ PERFIL (cuenta existente sin perfil CRM) ============ -->
+<div class="auth-wrap" id="profileScreen" hidden>
+  <div class="auth-card">
+    <h1>Completa tu perfil</h1>
+    <p class="sub" style="margin: 0;">Tu cuenta ya existe. Dinos cómo te verán en el call center.</p>
+    <form id="profileForm" novalidate>
+      <label class="field" for="pName">Nombre completo<input class="input" id="pName" type="text" required></label>
+      <label class="field" for="pRole">Rol
+        <select class="input" id="pRole"><option value="agente">Agente</option><option value="supervisor">Supervisor</option></select>
+      </label>
+      <div class="notice warn" id="profileError" hidden></div>
+      <button class="btn primary" type="submit">Continuar</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="appScreen" hidden>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7FD1C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0 1 16 0"/><rect x="2" y="12" width="4" height="7" rx="1.5"/><rect x="18" y="12" width="4" height="7" rx="1.5"/><path d="M20 19a4 4 0 0 1-4 3h-3"/></svg>
+      <span>Contacto360</span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Vistas">
+      <button class="tab" role="tab" id="tab-agente" aria-selected="true" data-view="agente">Agente <span class="dot" id="tabDot" hidden></span></button>
+      <button class="tab" role="tab" id="tab-supervisor" aria-selected="false" data-view="supervisor" hidden>Supervisor</button>
+      <button class="tab" role="tab" id="tab-clientes" aria-selected="false" data-view="clientes">Clientes (CRM)</button>
+    </nav>
+    <div class="spacer"></div>
+    <div class="campaign-pill"><span class="live" id="liveDot"></span><span id="liveText">Marcador detenido</span></div>
+    <div class="user-box"><span><b id="meName">—</b> · <span id="meRole">—</span></span><button type="button" id="btnLogout">Salir</button></div>
+  </div>
+</header>
+
+<main>
+  <div class="notice warn" id="globalError" hidden style="margin-bottom: 14px;"></div>
+
+  <!-- ============ AGENTE ============ -->
+  <section id="view-agente" role="tabpanel" aria-labelledby="tab-agente">
+    <div class="row">
+      <div class="col" style="flex: 1 1 280px; max-width: 340px;">
+        <div class="panel">
+          <div class="phone-state">
+            <span class="eyebrow">Mi estado</span>
+            <span class="chip" id="myStateChip"><span class="d"></span><span id="myStateText">En pausa</span></span>
+          </div>
+          <div>
+            <div class="big-num" id="phoneNumber">—</div>
+            <div class="sub" id="phoneSub">No estás recibiendo llamadas.</div>
+          </div>
+          <div class="ctrls" id="callCtrls" hidden>
+            <button class="btn" id="btnMute" type="button" aria-pressed="false">Silenciar</button>
+            <button class="btn" id="btnHold" type="button" aria-pressed="false">Retener</button>
+            <button class="btn" id="btnTransfer" type="button">Transferir</button>
+          </div>
+          <button class="btn danger" id="btnHang" type="button" hidden>Colgar</button>
+          <button class="btn primary" id="btnAvail" type="button">Ponerme disponible</button>
+          <button class="btn" id="btnPause" type="button" hidden>Pausa</button>
+        </div>
+        <div class="panel">
+          <span class="eyebrow">Mi turno</span>
+          <div class="mini-stats">
+            <div><div class="n" id="myCalls">0</div><div class="l">Llamadas atendidas</div></div>
+            <div><div class="n" id="myAht">0:00</div><div class="l">Tiempo medio (TMO)</div></div>
+            <div><div class="n" id="myPromises">0</div><div class="l">Promesas de pago</div></div>
+            <div><div class="n" id="myPromAmt">$0</div><div class="l">Monto prometido</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col" style="flex: 999 1 520px;">
+        <div class="panel" id="idlePanel">
+          <div class="waiting">
+            <div class="pulse" id="idlePulse"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"/></svg></div>
+            <h1 id="idleTitle">Estás en pausa</h1>
+            <p class="sub" id="idleText" style="max-width: 46ch; margin: 0;"></p>
+          </div>
+        </div>
+
+        <div class="col" id="customerPanel" hidden>
+          <div class="panel">
+            <div class="cust-head">
+              <div class="avatar" id="cAvatar">--</div>
+              <div style="flex: 1 1 240px; min-width: 0;">
+                <h1 id="cName">—</h1>
+                <div class="sub" id="cMeta">—</div>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="cChips"></div>
+            </div>
+            <div class="facts">
+              <div><div class="k">Saldo pendiente</div><div class="v mono" id="cBalance">—</div></div>
+              <div><div class="k">Pago mínimo</div><div class="v mono" id="cMin">—</div></div>
+              <div><div class="k">Días de atraso</div><div class="v mono" id="cLate">—</div></div>
+              <div><div class="k">Intento</div><div class="v mono" id="cAttempt">—</div></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="panel" style="flex: 1 1 280px;">
+              <span class="eyebrow">Guion sugerido</span>
+              <ol class="steps">
+                <li><span><b>Saludo y validación.</b> “Buenas tardes, ¿hablo con <span id="sName">—</span>? Le llamo de [EMPRESA]…”</span></li>
+                <li><span><b>Motivo.</b> Recordar el saldo de <span id="sBal">—</span> con <span id="sLate">—</span> días de atraso.</span></li>
+                <li><span><b>Opciones.</b> Pago mínimo de <span id="sMin">—</span> hoy, convenio a 3 meses o liga de pago por WhatsApp.</span></li>
+                <li><span><b>Cierre.</b> Confirmar fecha y monto de la promesa.</span></li>
+              </ol>
+            </div>
+            <div class="panel" style="flex: 1 1 280px;">
+              <span class="eyebrow">Historial en el CRM</span>
+              <ul class="timeline" id="cHistory"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <form class="panel" id="dispForm" style="flex: 1 1 300px; max-width: 380px;" novalidate>
+        <div>
+          <div class="eyebrow">Tipificación</div>
+          <div class="sub" id="dispHint">Disponible cuando estés en una llamada.</div>
+        </div>
+        <fieldset id="dispSet" disabled style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; min-width: 0;">
+          <legend class="sub" style="padding: 0; margin-bottom: 8px;">Resultado de la llamada</legend>
+          <div class="disp">
+            <label><input type="radio" name="disp" id="d-promesa" value="promesa"> Promesa de pago</label>
+            <label><input type="radio" name="disp" id="d-rellamar" value="rellamar"> Volver a llamar</label>
+            <label><input type="radio" name="disp" id="d-noint" value="no_interesado"> No interesado</label>
+            <label><input type="radio" name="disp" id="d-equiv" value="equivocado"> Número equivocado</label>
+            <label><input type="radio" name="disp" id="d-buzon" value="buzon"> Se cortó / buzón</label>
+          </div>
+          <div class="two" id="promiseFields" hidden>
+            <label class="field" for="pAmount">Monto<input class="input mono" id="pAmount" type="text" inputmode="decimal"></label>
+            <label class="field" for="pDate">Fecha<input class="input" id="pDate" type="date"></label>
+          </div>
+          <div id="callbackFields" hidden>
+            <label class="field" for="cbMins">Volver a llamar en
+              <select class="input" id="cbMins">
+                <option value="5">5 minutos</option>
+                <option value="30">30 minutos</option>
+                <option value="120">2 horas</option>
+                <option value="1440">Mañana</option>
+              </select>
+            </label>
+          </div>
+          <label class="field" for="dNotes">Notas<textarea class="input" id="dNotes" placeholder="Ej. Acepta pago mínimo; enviar liga por WhatsApp."></textarea></label>
+          <div class="notice warn" id="dispError" hidden>Elige un resultado antes de guardar.</div>
+          <button class="btn primary" id="btnSave" type="submit" style="min-height: 50px;">Guardar y siguiente llamada</button>
+        </fieldset>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ SUPERVISOR ============ -->
+  <section id="view-supervisor" role="tabpanel" aria-labelledby="tab-supervisor" hidden>
+    <div class="kpis">
+      <div class="kpi"><span class="l">Agentes conectados</span><span class="n" id="kAgents">0</span><span class="s" id="kAgentsSub">—</span></div>
+      <div class="kpi"><span class="l">Ratio de marcación</span><span class="n"><span id="kRatio">1.0</span><small> : 1</small></span><span class="s">Llamadas lanzadas por agente libre</span></div>
+      <div class="kpi"><span class="l">Tasa de abandono</span><span class="n" id="kAband">0.0%</span><span class="s" id="kAbandSub">—</span></div>
+      <div class="kpi"><span class="l">Contactos con persona</span><span class="n" id="kContacts">0</span><span class="s" id="kContactsSub">—</span></div>
+      <div class="kpi"><span class="l">Avance de la lista</span><span class="n" id="kList">0%</span><div class="progress"><div id="kListBar" style="width: 0%"></div></div></div>
+      <div class="kpi"><span class="l">Promesas de pago</span><span class="n" id="kPromises">0</span><span class="s mono" id="kPromisesSub">$0</span></div>
+    </div>
+
+    <div class="row">
+      <div class="col" style="flex: 1 1 320px; max-width: 400px;">
+        <div class="panel">
+          <div><h2>Control del marcador</h2><div class="sub">Se guarda en la nube y aplica a toda la campaña.</div></div>
+          <div class="engine-box">
+            <div class="row-line"><b>Motor de marcación</b><span class="chip" id="engChip"><span class="d"></span><span id="engText">Detenido</span></span></div>
+            <span class="sub" id="engHelp">El motor corre en la pestaña de un supervisor. Mientras esté abierta, marca y reparte llamadas a todos los agentes.</span>
+            <button class="btn primary" type="button" id="btnEngine">Iniciar motor en esta pestaña</button>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-weight: 500;">Modo de marcación</span>
+            <div class="seg" role="radiogroup" aria-label="Modo de marcación">
+              <button type="button" role="radio" id="modePred" data-mode="predictivo" aria-checked="true">Predictivo</button>
+              <button type="button" role="radio" id="modeProg" data-mode="progresivo" aria-checked="false">Progresivo</button>
+            </div>
+            <span class="sub" id="modeHelp"></span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-weight: 500;">Abandono máximo permitido</span>
+            <div class="stepper">
+              <button class="btn" type="button" id="abDown" aria-label="Bajar límite">−</button>
+              <span class="val" id="abVal">3.0%</span>
+              <button class="btn" type="button" id="abUp" aria-label="Subir límite">+</button>
+            </div>
+          </div>
+          <div class="two">
+            <label class="field" for="maxRatio">Ratio máximo
+              <select class="input" id="maxRatio"><option>2</option><option>3</option><option>4</option><option>5</option></select>
+            </label>
+            <label class="field" for="bots">Agentes virtuales
+              <select class="input" id="bots"><option value="0">Ninguno</option><option value="3">3</option><option value="5">5</option><option value="7">7</option></select>
+            </label>
+          </div>
+          <span class="sub">Los agentes virtuales atienden llamadas simuladas para probar el marcador con poco personal.</span>
+          <button class="btn" type="button" id="btnRun">Pausar campaña</button>
+        </div>
+
+        <div class="panel">
+          <div><h2>Lista de clientes</h2><div class="sub" id="listInfo">—</div></div>
+          <div class="btn-row">
+            <span class="btn file-btn">Importar CSV<input type="file" id="csvFile" accept=".csv,text/csv" aria-label="Importar CSV"></span>
+            <button class="btn" type="button" id="btnSeed">Cargar 80 de ejemplo</button>
+          </div>
+          <span class="sub">CSV con columnas: nombre, telefono, saldo, pago_minimo, dias_atraso. La primera fila son los encabezados.</span>
+          <button class="btn" type="button" id="btnResetCamp">Reiniciar campaña</button>
+          <div class="confirm" id="resetConfirm" hidden>
+            <span>Todos los clientes vuelven a “Pendiente” con 0 intentos y se borran las estadísticas. El historial de cada cliente se conserva.</span>
+            <div class="btn-row"><button class="btn" type="button" id="resetNo">Cancelar</button><button class="btn danger" type="button" id="resetYes">Reiniciar</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col" style="flex: 999 1 520px;">
+        <div class="panel">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline;">
+            <h2>Abandono por minuto</h2>
+            <span class="sub">Línea punteada: límite configurado · escala 0–10%</span>
+          </div>
+          <div class="chart" id="chart"></div>
+        </div>
+        <div class="panel">
+          <h2>Agentes en tiempo real</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Agente</th><th>Estado</th><th>Tiempo</th><th>Cliente</th><th>Llamadas</th><th>TMO</th></tr></thead>
+              <tbody id="agentRows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Actividad del marcador</h2>
+          <ul class="log" id="log"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CLIENTES ============ -->
+  <section id="view-clientes" role="tabpanel" aria-labelledby="tab-clientes" hidden>
+    <div class="row">
+      <div class="panel" style="flex: 999 1 560px;">
+        <div class="toolbar">
+          <label class="field" for="q">Buscar<input class="input" id="q" type="search" placeholder="Nombre, número o folio"></label>
+          <label class="field" for="fStatus" style="flex: 0 1 220px;">Estado
+            <select class="input" id="fStatus">
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="rellamar">Volver a llamar</option>
+              <option value="promesa">Promesa de pago</option>
+              <option value="no_interesado">No interesado</option>
+              <option value="equivocado">Número equivocado</option>
+              <option value="agotado">Intentos agotados</option>
+            </select>
+          </label>
+        </div>
+        <div class="sub" id="cliCount"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Folio</th><th>Cliente</th><th>Teléfono</th><th>Saldo</th><th>Atraso</th><th>Intentos</th><th>Estado</th></tr></thead>
+            <tbody id="cliRows"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel" style="flex: 1 1 300px; max-width: 420px;" id="cliDetail">
+        <span class="eyebrow">Ficha del cliente</span>
+        <p class="sub" style="margin: 0;">Selecciona un cliente para ver su historial.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot"><span>Llamadas simuladas: la telefonía real (Twilio o VICIdial) se conecta en la siguiente fase.</span></div>
+</main>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="vendor/firebase/firebase-app-compat.js"></script>
+<script src="vendor/firebase/firebase-auth-compat.js"></script>
+<script src="vendor/firebase/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

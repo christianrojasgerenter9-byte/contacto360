@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isSupervisor() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/crm_agents/$(request.auth.uid))
+        && get(/databases/$(database)/documents/crm_agents/$(request.auth.uid)).data.role == 'supervisor';
+    }
+
+    // Agentes: cada quien crea su perfil y actualiza su estado sin poder cambiar su rol.
+    // Los supervisores (el motor de marcación) actualizan a cualquiera y crean/borran agentes virtuales.
+    match /crm_agents/{id} {
+      allow read: if signedIn();
+      allow create: if (signedIn() && id == request.auth.uid) || isSupervisor();
+      allow update: if isSupervisor()
+        || (signedIn() && id == request.auth.uid && request.resource.data.role == resource.data.role);
+      allow delete: if isSupervisor();
+    }
+
+    // Clientes: los agentes los leen y tipifican; solo supervisores cargan o borran.
+    match /crm_contacts/{id} {
+      allow read, update: if signedIn();
+      allow create, delete: if isSupervisor();
+    }
+
+    // Configuración y estadísticas de la campaña: solo supervisores escriben.
+    match /crm_campaign/{id} {
+      allow read: if signedIn();
+      allow write: if isSupervisor();
+    }
+  }
+}
