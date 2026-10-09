@@ -46,7 +46,7 @@
   const CFG = window.FIREBASE_CONFIG;
   if (!CFG || !CFG.apiKey || CFG.apiKey.startsWith('TU_')) {
     $('authScreen').hidden = false;
-    $('authError').textContent = 'Falta la configuración de Firebase. Pega la de tu proyecto en crm/firebase-config.js y recarga.';
+    $('authError').textContent = 'Falta la configuración de Firebase. Pega la de tu proyecto en firebase-config.js y recarga.';
     $('authError').hidden = false;
     $('authSubmit').disabled = true;
     return;

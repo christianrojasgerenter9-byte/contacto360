@@ -1,10 +1,10 @@
-// Configuración del proyecto de Firebase del CRM (proyecto nuevo, separado de la app de notas).
-// La encuentras en: Firebase Console → ⚙️ Configuración del proyecto → Tus apps → Web → Configuración del SDK
+// Configuración del proyecto de Firebase del CRM (proyecto contacto360, separado de la app de notas).
+// Se obtiene en: Firebase Console → ⚙️ Configuración del proyecto → Tus apps → Web → Configuración del SDK
 window.FIREBASE_CONFIG = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.firebasestorage.app",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID",
+  apiKey: "AIzaSyBiZalcdYhmlNrt91z2AeUm3aknPAmBCg0",
+  authDomain: "contacto360.firebaseapp.com",
+  projectId: "contacto360",
+  storageBucket: "contacto360.firebasestorage.app",
+  messagingSenderId: "930304205590",
+  appId: "1:930304205590:web:1623f6e6091f4f4120e637",
 };
